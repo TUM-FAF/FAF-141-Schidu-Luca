@@ -1,0 +1,2 @@
+#include "Resources.h"
+MyIcon ICON "themes.ico"
