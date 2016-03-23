@@ -12,32 +12,33 @@
 #define DRAW_LINE 1
 #define DRAW_CIRCLE 2
 #define DRAW_RACTANGLE 3
+#define DRAW_BEZIER 69
 #define ERASER_MEDIUM 5
 #define CONTROL_SPACE 101
 #define ALT_LEFT 102
-
-
+#define WIDTH 800
+#define HEIGTH 600
+int counterForBezier = 0;
+POINT bezierCoordinate[4];
+POINT bezierPoint;
 POINT cursorPos;
 HBITMAP fin = NULL;
 HINSTANCE hInstance;
 int draw_figure = 0;
-GRADIENT_RECT r;
 int xMouse, yMouse;
 RECT rectangle;
-#define WIDTH 800
-#define HEIGTH 600
 static POINT apt[4] ;
 HDC Memhdc;
 HBITMAP Membitmap;
-TRIVERTEX vertices[2];
-HDC hdc;                       // handle to device context
-RECT rcClient;                 // client area rectangle
-POINT ptClientUL;              // client upper left corner
-POINT ptClientLR;              // client lower right corner
-static POINTS ptsBegin;        // beginning point
-static POINTS ptsEnd;          // new endpoint
-static POINTS ptsPrevEnd;      // previous endpoint
-static BOOL fPrevLine = FALSE; // previous line flag
+HDC hdc;
+HPEN bezierPen;
+RECT rcClient;
+POINT ptClientUL;
+POINT ptClientLR;
+POINTS ptsBegin;
+POINTS ptsEnd;
+POINTS ptsPrevEnd;
+BOOL fPrevLine = FALSE;
 
 
 void drawLines(HDC Memhdc) {
@@ -54,30 +55,15 @@ void drawLines(HDC Memhdc) {
 
 void drawBezier(HDC hdc) {
 
-    PolyBezier (hdc, apt, 4) ;
-    MoveToEx (hdc, apt[0].x, apt[0].y, NULL) ;
-    LineTo (hdc, apt[1].x, apt[1].y) ;
-    MoveToEx (hdc, apt[2].x, apt[2].y, NULL) ;
-    LineTo (hdc, apt[3].x, apt[3].y) ;
+    POINT Pt[4] = { {  190,  182 }, {  258, 416 }, { 524, 362 }, { 420,  228 } };
+    PolyBezierTo(hdc,Pt,4);
+    PolyBezier (hdc, Pt, 4) ;
+    MoveToEx (hdc, Pt[0].x, Pt[0].y, NULL) ;
+    LineTo (hdc, Pt[1].x, Pt[1].y) ;
+    MoveToEx (hdc, Pt[2].x, Pt[2].y, NULL) ;
+    LineTo (hdc, Pt[3].x, Pt[3].y) ;
 }
 
-void drawGradient() {
-
-    vertices[0].x = 10;
-    vertices[0].y = 10;
-    vertices[0].Red = 0xffff;
-    vertices[0].Green = 0;
-    vertices[0].Blue = 0;
-    vertices[0].Alpha = 0xffff;
-
-    vertices[1].x = 200;
-    vertices[1].y = 200;
-    vertices[1].Red = 0;
-    vertices[1].Green = 0;
-    vertices[1].Blue = 0xffff;
-    vertices[1].Alpha = 0xffff;
-
-}
 
 void drawObjects(HDC Memhdc) {
 
@@ -87,9 +73,6 @@ void drawObjects(HDC Memhdc) {
     Rectangle(Memhdc, 400, 10, 550, 90);
     SelectObject(Memhdc,brush);
     Ellipse(Memhdc, 560, 10, 640 , 90);
-//    drawGradient();
-//    GradientFill(Memhdc, vertices, 2, &r, 1, GRADIENT_FILL_RECT_V);
-
 }
 
 void initializaCanvas(HWND hWnd) {
@@ -104,26 +87,29 @@ void initializaCanvas(HWND hWnd) {
     EndPaint(hWnd, &ps);
 }
 
-void drawGradient(HDC hdc){
+void drawGradient(HDC hdc, int x, int y, int X, int Y, int type){
 
     HBRUSH hBrush;
     RECT rectgleToDraw;
-    RECT rectGradient = {50, 150, 200, 230};
+    RECT rectGradient = {x, y, X, Y};
     rectgleToDraw.top = rectGradient.top;
     rectgleToDraw.bottom = rectGradient.bottom;
 
     for(int i = 0; i < (rectGradient.right - rectGradient.left); i++) {
-        int blue;
-        int red;
-        blue = i * 255 / (rectGradient.right - rectGradient.left);
-        red = i * 255 / (rectGradient.right - rectGradient.left);
+        int color;
+        color = i * 255/(rectGradient.right - rectGradient.left);
         rectgleToDraw.left  = rectGradient.left  + i;
         rectgleToDraw.right = rectGradient.left + i + 1;
-        hBrush = CreateSolidBrush(RGB(0, red, blue));
+        if(type == 0) {
+            hBrush = CreateSolidBrush(RGB(0, 0, color));
+        }else{
+            hBrush = CreateSolidBrush(RGB(color, 0, 0));
+
+        }
         FillRect(hdc, &rectgleToDraw, hBrush);
         DeleteObject(hBrush);
     }
-    
+
 }
 
 void initDraw(HWND hWnd){
@@ -144,7 +130,9 @@ void initDraw(HWND hWnd){
     drawLines(Memhdc);
     drawBezier(Memhdc);
     drawObjects(Memhdc);
-    drawGradient(Memhdc);
+    drawGradient(Memhdc, 10, 180, 100, 250, 0 );
+    drawGradient(Memhdc, 10, 270, 100, 340, 1 );
+
 
     BitBlt(hdc, 0, 0, win_width, win_height, Memhdc, 0, 0, SRCCOPY);
 
@@ -164,6 +152,7 @@ void AddMenus(HWND hwnd) {
     AppendMenuW(hMenu, MF_STRING, DRAW_LINE, L"&Line");
     AppendMenuW(hMenu, MF_STRING, DRAW_CIRCLE, L"&Circle");
     AppendMenuW(hMenu, MF_STRING, DRAW_RACTANGLE, L"&Rectangle");
+    AppendMenuW(hMenu, MF_STRING, DRAW_BEZIER, L"&Bezier");
 
     AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR) hMenu, L"&Draw");
 
@@ -304,6 +293,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
                                hInst,
                                NULL);
 
+
     if (!hWnd) {
         int nResult = GetLastError();
 
@@ -331,8 +321,6 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         case WM_PAINT: {
             initDraw(hWnd);
 
-
-
         }
             break;
 
@@ -340,7 +328,7 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             AddMenus(hWnd);
             initializaCanvas(hWnd);
             fin = (HBITMAP)LoadImage(hInstance, "themes.ico", IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
-
+            bezierPen = CreatePen(PS_SOLID, 3, RGB(250, 0, 0));
 
             break;
         }
@@ -377,6 +365,21 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             GetCursorPos(&cursorPos);
 
             ptsBegin = MAKEPOINTS(lParam);
+
+            if((wParam == MK_LBUTTON) && (draw_figure == 10)) {
+                if(counterForBezier == 0) {
+                    bezierPoint.x = xMouse;
+                    bezierPoint.y = yMouse;
+                    bezierCoordinate[0] = bezierPoint;
+                    counterForBezier = 1;
+                }
+                else {
+                    bezierPoint.x = xMouse;
+                    bezierPoint.y = yMouse;
+                    bezierCoordinate[2] = bezierPoint;
+                    counterForBezier = 3;
+                }
+            }
             return 0;
         }
 
@@ -400,7 +403,7 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
             if(draw_figure == 5 && MK_LBUTTON) {
 
-                int eraser_width = 20;  // function call, the width of eraser tool
+                int eraser_width = 20;
 
                 rectangle.left = xMouse - (eraser_width / 2);
                 rectangle.right = xMouse + (eraser_width / 2);
@@ -408,10 +411,7 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 rectangle.bottom = yMouse + (eraser_width / 2);
                 InvalidateRect(hWnd, &rectangle, FALSE);
                 SendMessage(hWnd, WM_PAINT, 0, 0);
-
             }
-
-
             break;
         }
 
@@ -419,6 +419,23 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             fPrevLine = FALSE;
             ClipCursor(NULL);
             ReleaseCapture();
+
+            if(counterForBezier == 1){
+                bezierPoint.x = xMouse;
+                bezierPoint.y = yMouse;
+                bezierCoordinate[1] = bezierPoint;
+                counterForBezier = 2;
+            }
+
+            if(counterForBezier == 3) {
+                bezierPoint.x = xMouse;
+                bezierPoint.y = yMouse;
+                bezierCoordinate[3] = bezierPoint;
+                counterForBezier = 0;
+                SelectObject(hdc, bezierPen);
+                PolyBezier(hdc, bezierCoordinate, 4);
+                DeleteObject(bezierPen);
+            }
 
             break;
         }
@@ -446,14 +463,13 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     draw_figure = 3;
                 }
 
-
-
+                case DRAW_BEZIER: {
+                    draw_figure = 10;
+                }
             }
 
             break;
         }
-
-
 
         case WM_DESTROY: {
             PostQuitMessage(0);
