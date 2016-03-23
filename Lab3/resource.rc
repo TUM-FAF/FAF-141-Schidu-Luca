@@ -1,0 +1,4 @@
+#include "resource.h"
+
+MyIcon ICON "themes.ico"
+PHOTO BITMAP "fin.jpg"
