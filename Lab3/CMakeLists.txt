@@ -3,5 +3,5 @@ project(WinAPI)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set(SOURCE_FILES main.cpp Button.cpp Button.h EditText.cpp EditText.h resource.rc resource.h)
+set(SOURCE_FILES main.cpp Button.cpp Button.h EditText.cpp EditText.h resource.rc resource.h DrawingUtils.cpp DrawingUtils.h)
 add_executable(WinAPI ${SOURCE_FILES})

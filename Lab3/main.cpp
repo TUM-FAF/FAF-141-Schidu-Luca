@@ -8,12 +8,14 @@
 #include "resource.h"
 
 
+
 #define DRAW_LINE 1
 #define DRAW_CIRCLE 2
 #define DRAW_RACTANGLE 3
-#define ERASER_SMALL 4
 #define ERASER_MEDIUM 5
-#define ERASER_LARGER 6
+#define CONTROL_SPACE 101
+#define ALT_LEFT 102
+
 
 POINT cursorPos;
 HBITMAP fin = NULL;
@@ -25,8 +27,6 @@ RECT rectangle;
 #define WIDTH 800
 #define HEIGTH 600
 static POINT apt[4] ;
-int win_width;
-int win_height;
 HDC Memhdc;
 HBITMAP Membitmap;
 TRIVERTEX vertices[2];
@@ -104,6 +104,28 @@ void initializaCanvas(HWND hWnd) {
     EndPaint(hWnd, &ps);
 }
 
+void drawGradient(HDC hdc){
+
+    HBRUSH hBrush;
+    RECT rectgleToDraw;
+    RECT rectGradient = {50, 150, 200, 230};
+    rectgleToDraw.top = rectGradient.top;
+    rectgleToDraw.bottom = rectGradient.bottom;
+
+    for(int i = 0; i < (rectGradient.right - rectGradient.left); i++) {
+        int blue;
+        int red;
+        blue = i * 255 / (rectGradient.right - rectGradient.left);
+        red = i * 255 / (rectGradient.right - rectGradient.left);
+        rectgleToDraw.left  = rectGradient.left  + i;
+        rectgleToDraw.right = rectGradient.left + i + 1;
+        hBrush = CreateSolidBrush(RGB(0, red, blue));
+        FillRect(hdc, &rectgleToDraw, hBrush);
+        DeleteObject(hBrush);
+    }
+    
+}
+
 void initDraw(HWND hWnd){
 
     RECT Client_Rect;
@@ -122,6 +144,7 @@ void initDraw(HWND hWnd){
     drawLines(Memhdc);
     drawBezier(Memhdc);
     drawObjects(Memhdc);
+    drawGradient(Memhdc);
 
     BitBlt(hdc, 0, 0, win_width, win_height, Memhdc, 0, 0, SRCCOPY);
 
@@ -150,6 +173,10 @@ void AddMenus(HWND hwnd) {
 
     AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR) hMenu, L"&Eraser");
     SetMenu(hwnd, hMenubar);
+
+    RegisterHotKey(hwnd, CONTROL_SPACE, MOD_CONTROL, VK_SPACE);
+    RegisterHotKey(hwnd, ALT_LEFT, MOD_ALT, VK_LEFT);
+
 }
 
 
@@ -235,34 +262,6 @@ void mouse_drawRectangle(WPARAM wParam, LPARAM lParam, HWND hWnd) {
     }
 }
 
-void eraser(WPARAM wParam, LPARAM lParam, HWND hWnd) {
-
-    if (wParam & MK_LBUTTON) {
-        HBRUSH hbrush = CreateSolidBrush(RGB(255,255,255));
-        PAINTSTRUCT ps;
-        hdc = GetDC(hWnd);
-        SetROP2(hdc, R2_NOTXORPEN);
-        SelectObject(hdc, hbrush);
-
-        if (fPrevLine) {
-            MoveToEx(hdc, ptsBegin.x, ptsBegin.y,
-                     (LPPOINT) NULL);
-            Rectangle(hdc, ptsBegin.x, ptsBegin.y, ptsEnd.x, ptsEnd.y);
-        }
-
-
-        ptsEnd = MAKEPOINTS(lParam);
-        MoveToEx(hdc, ptsBegin.x, ptsBegin.y, (LPPOINT) NULL);
-        Rectangle(hdc, ptsBegin.x, ptsBegin.y, ptsEnd.x, ptsEnd.y);
-
-
-        fPrevLine = TRUE;
-        ptsPrevEnd = ptsEnd;
-        ReleaseDC(hWnd, hdc);
-    }
-}
-
-
 
 LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -332,13 +331,7 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         case WM_PAINT: {
             initDraw(hWnd);
 
-//            PAINTSTRUCT ps;
-//            HDC mem = CreateCompatibleDC(hdc);
-//            HDC hdc = BeginPaint(hWnd, &ps);
-//            Rectangle(Memhdc, 20,20, 500, 500);
-//            BitBlt(hdc, 100, 100, 1000, 1000, Memhdc, 100, 100, SRCCOPY);
-//
-//            EndPaint(hWnd, &ps);
+
 
         }
             break;
@@ -350,6 +343,21 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 
             break;
+        }
+
+        case WM_HOTKEY : {
+            switch(wParam) {
+
+                case CONTROL_SPACE: {
+                    draw_figure = 2;
+                    break;
+                }
+
+                case ALT_LEFT: {
+                    draw_figure = 3;
+                    break;
+                }
+            }
         }
 
         case WM_LBUTTONDOWN : {
@@ -413,13 +421,6 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             ReleaseCapture();
 
             break;
-        }
-
-
-        case WM_HOTKEY : {
-            switch(wParam) {
-
-            }
         }
 
 
