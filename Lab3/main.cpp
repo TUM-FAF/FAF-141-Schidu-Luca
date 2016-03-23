@@ -14,6 +14,8 @@
 #define DRAW_RACTANGLE 3
 #define DRAW_BEZIER 69
 #define ERASER_MEDIUM 5
+#define ERASER_SMALL 12
+#define ERASER_LARGE 13
 #define CONTROL_SPACE 101
 #define ALT_LEFT 102
 #define WIDTH 800
@@ -22,12 +24,13 @@ int counterForBezier = 0;
 POINT bezierCoordinate[4];
 POINT bezierPoint;
 POINT cursorPos;
+int eraserSize;
+bool firstStart = true;
 HBITMAP fin = NULL;
 HINSTANCE hInstance;
 int draw_figure = 0;
 int xMouse, yMouse;
 RECT rectangle;
-static POINT apt[4] ;
 HDC Memhdc;
 HBITMAP Membitmap;
 HDC hdc;
@@ -157,7 +160,9 @@ void AddMenus(HWND hwnd) {
     AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR) hMenu, L"&Draw");
 
     hMenu = CreateMenu();
+    AppendMenuW(hMenu, MF_STRING, ERASER_SMALL, L"&Small");
     AppendMenuW(hMenu, MF_STRING, ERASER_MEDIUM, L"&Medium");
+    AppendMenuW(hMenu, MF_STRING, ERASER_LARGE, L"&Large");
 
 
     AppendMenuW(hMenubar, MF_POPUP, (UINT_PTR) hMenu, L"&Eraser");
@@ -319,8 +324,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
 LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_PAINT: {
-            initDraw(hWnd);
-
+                initDraw(hWnd);
         }
             break;
 
@@ -403,12 +407,10 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
             if(draw_figure == 5 && MK_LBUTTON) {
 
-                int eraser_width = 20;
-
-                rectangle.left = xMouse - (eraser_width / 2);
-                rectangle.right = xMouse + (eraser_width / 2);
-                rectangle.top = yMouse - (eraser_width / 2);
-                rectangle.bottom = yMouse + (eraser_width / 2);
+                rectangle.left = xMouse - (eraserSize / 2);
+                rectangle.right = xMouse + (eraserSize / 2);
+                rectangle.top = yMouse - (eraserSize / 2);
+                rectangle.bottom = yMouse + (eraserSize / 2);
                 InvalidateRect(hWnd, &rectangle, FALSE);
                 SendMessage(hWnd, WM_PAINT, 0, 0);
             }
@@ -456,8 +458,22 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
                 case ERASER_MEDIUM : {
                     draw_figure = 5;
+                    eraserSize = 50;
                     break;
                 }
+
+                case ERASER_SMALL : {
+                    draw_figure = 5;
+                    eraserSize = 50;
+                    break;
+                }
+
+                case ERASER_LARGE : {
+                    draw_figure = 5;
+                    eraserSize = 100;
+                    break;
+                }
+
 
                 case DRAW_CIRCLE : {
                     draw_figure = 3;
