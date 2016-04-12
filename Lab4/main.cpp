@@ -45,9 +45,7 @@ void initObjects() {
         object->setColor(rand()%250, rand()%250, rand()%250);
         object->setCircle(true);
         vec.push_back(*object);
-
     }
-
 }
 
 static void Paint(HWND hWnd, LPPAINTSTRUCT lpPS) {
@@ -73,12 +71,13 @@ static void Paint(HWND hWnd, LPPAINTSTRUCT lpPS) {
                 if(vec[i].objectCollision(vec[j].getX(), vec[j].getY())){
                     vec[i].setColor(rand()%250, rand()%250, rand()%250);
                     vec[j].setColor(rand()%250, rand()%250, rand()%250);
-                                       
+
                 }
             }
         }
 
         vec[i].wallCollision(rect.right, rect.bottom);
+
 
         switch(vec[i].getDirection()) {
             case 0:
