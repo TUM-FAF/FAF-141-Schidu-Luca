@@ -93,6 +93,7 @@ void Object::wallCollision(int width, int height) {
                 direction = 0;
                 break;
         }
+        circle = false;
     }
 
     if(x + this->width >= width ) {
@@ -104,6 +105,7 @@ void Object::wallCollision(int width, int height) {
                 direction = 3;
                 break;
         }
+        circle = false;
     }
 
     if(y + this->heigth >= height) {
@@ -116,6 +118,12 @@ void Object::wallCollision(int width, int height) {
                 break;
         }
     }
+}
 
+void Object::setSpeed(int speed) {
+    this->speed = speed;
+}
 
+int Object::getSpeed() {
+    return this->speed;
 }

@@ -22,32 +22,35 @@ static RECT rect;
 static HBRUSH hBrush;
 static HBITMAP hbmMem;
 static HANDLE hOld;
+int vectorSize = 5;
 
 int x, y;
 
 vector<Object> vec;
 
+RECT rc;
+HDC hdcMem;
+HBITMAP hbmMem, hbmOld;
+HBRUSH hbrBkGnd;
+HFONT hfntOld;
+
 void initObjects() {
 
     srand(time(NULL));
     Object *object;
-    for(int i = 0; i < 10; i++) {
+    for(int i = 0; i < vectorSize; i++) {
         object = new Object(rand()%rect.right, rand()%rect.bottom, 50, 50);
         object->setCircle(false);
         object->setDirection(rand()%4);
+        object->setSpeed(rand()%8 + 1);
+        object->setColor(rand()%250, rand()%250, rand()%250);
         vec.push_back(*object);
     }
 
 }
 
-static void Paint(HWND hWnd, LPPAINTSTRUCT lpPS)
-{
-    RECT rc;
-    HDC hdcMem;
-    HBITMAP hbmMem, hbmOld;
-    HBRUSH hbrBkGnd;
-    HFONT hfntOld;
-
+static void Paint(HWND hWnd, LPPAINTSTRUCT lpPS) {
+    
     GetClientRect(hWnd, &rc);
 
     hdcMem = CreateCompatibleDC(lpPS->hdc);
@@ -57,27 +60,28 @@ static void Paint(HWND hWnd, LPPAINTSTRUCT lpPS)
 
     FillRect(hdcMem, &rc, hbrBkGnd);
 
-    for(int i = 0; i < 10; i++){
+    for(int i = 0; i < vectorSize; i++){
         x = vec[i].getX();
         y = vec[i].getY();
-
+        hbrBkGnd = CreateSolidBrush(RGB(vec[i].getR(), vec[i].getG(), vec[i].getB()));
+        SelectObject(hdcMem, hbrBkGnd);
         vec[i].wallCollision(rect.right, rect.bottom);
         switch(vec[i].getDirection()) {
             case 0:
-                x += 2;
-                y += 2;
+                x += vec[i].getSpeed();
+                y += vec[i].getSpeed();
                 break;
             case 1:
-                x -= 2;
-                y += 2;
+                x -= vec[i].getSpeed();
+                y += vec[i].getSpeed();
                 break;
             case 2:
-                x += 2;
-                y -= 2;
+                x += vec[i].getSpeed();
+                y -= vec[i].getSpeed();
                 break;
             case 3:
-                x -= 2;
-                y -= 2;
+                x -= vec[i].getSpeed();
+                y -= vec[i].getSpeed();
                 break;
         }
 
@@ -178,8 +182,6 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
         case WM_CREATE: {
 
-            x = 0;
-            y = 0;
 
             hdc = GetDC(hWnd);
             GetClientRect(hWnd,&rect);
@@ -189,7 +191,7 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
             int ret = SetTimer(hWnd, TIMER_ID, 5, NULL);
             if(ret == 0)
-                MessageBox(hWnd, "Could not SetTimer()!", "Error", MB_OK | MB_ICONEXCLAMATION);
+                    MessageBox(hWnd, "Could not SetTimer()!", "Error", MB_OK | MB_ICONEXCLAMATION);
             initObjects();
             break;
         }
@@ -207,6 +209,19 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             }
             break;
         }
+
+        case WM_LBUTTONDOWN: {
+            Object *object;
+            object = new Object(rand()%rect.right, rand()%rect.bottom, 50, 50);
+            object->setCircle(false);
+            object->setDirection(rand()%4);
+            object->setSpeed(rand()%8 + 1);
+            object->setColor(rand()%250, rand()%250, rand()%250);
+            vec.push_back(*object);
+            vectorSize++;
+            break;
+        }
+
 
         case WM_DESTROY: {
             KillTimer(hWnd, TIMER_ID);
