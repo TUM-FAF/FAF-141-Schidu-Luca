@@ -6,7 +6,7 @@
 #include <c++/iostream>
 #include <windowsx.h>
 #include <wingdi.h>
-#include <c++/bits/stl_vector.h>
+#include <vector>
 #include "resource.h"
 #include "Object.h"
 
@@ -29,7 +29,14 @@ vector<Object> vec;
 
 void initObjects() {
 
-    for
+    srand(time(NULL));
+    Object *object;
+    for(int i = 0; i < 10; i++) {
+        object = new Object(rand()%rect.right, rand()%rect.bottom, 50, 50);
+        object->setCircle(false);
+        object->setDirection(rand()%4);
+        vec.push_back(*object);
+    }
 
 }
 
@@ -43,28 +50,41 @@ static void Paint(HWND hWnd, LPPAINTSTRUCT lpPS)
 
     GetClientRect(hWnd, &rc);
 
-        hdcMem = CreateCompatibleDC(lpPS->hdc);
-
-
-    hbmMem = CreateCompatibleBitmap(lpPS->hdc,
-                                    rc.right-rc.left,
-                                    rc.bottom-rc.top);
-
-
+    hdcMem = CreateCompatibleDC(lpPS->hdc);
+    hbmMem = CreateCompatibleBitmap(lpPS->hdc, rc.right-rc.left, rc.bottom-rc.top);
     hbmOld = (HBITMAP) SelectObject(hdcMem, hbmMem);
-
-
     hbrBkGnd = CreateSolidBrush(GetSysColor(COLOR_WINDOW));
+
     FillRect(hdcMem, &rc, hbrBkGnd);
-    x += 2;
-    y += 2;
-    Rectangle(hdcMem, x, y, x + 100, y + 100);
+
+    for(int i = 0; i < 10; i++){
+        x = vec[i].getX();
+        y = vec[i].getY();
+
+        vec[i].wallCollision(rect.right, rect.bottom);
+        switch(vec[i].getDirection()) {
+            case 0:
+                x += 2;
+                y += 2;
+                break;
+            case 1:
+                x -= 2;
+                y += 2;
+                break;
+            case 2:
+                x += 2;
+                y -= 2;
+                break;
+            case 3:
+                x -= 2;
+                y -= 2;
+                break;
+        }
+
+        vec[i].setPosition(x, y);
+        Rectangle(hdcMem, vec[i].getX(), vec[i].getY(), vec[i].getX() + vec[i].getWidth(), vec[i].getY() + vec[i].getHeight());
+    }
     DeleteObject(hbrBkGnd);
-
-    //
-    // Render the image into the offscreen DC.
-    //
-
     SetBkMode(hdcMem, TRANSPARENT);
     SetTextColor(hdcMem, GetSysColor(COLOR_WINDOWTEXT));
 
@@ -157,17 +177,20 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             break;
 
         case WM_CREATE: {
+
             x = 0;
             y = 0;
+
             hdc = GetDC(hWnd);
             GetClientRect(hWnd,&rect);
             hdcMem = CreateCompatibleDC(hdc);
             hbmMem = CreateCompatibleBitmap(hdc, rect.right, rect.bottom);
             hOld = SelectObject(hdcMem,hbmMem);
 
-            int ret = SetTimer(hWnd, TIMER_ID, 10, NULL);
+            int ret = SetTimer(hWnd, TIMER_ID, 5, NULL);
             if(ret == 0)
                 MessageBox(hWnd, "Could not SetTimer()!", "Error", MB_OK | MB_ICONEXCLAMATION);
+            initObjects();
             break;
         }
 

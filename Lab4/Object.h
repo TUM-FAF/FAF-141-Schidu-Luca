@@ -12,6 +12,8 @@ class Object {
     int x;
     int y;
     int r, g, b;
+    bool circle;
+    int direction;
 
 
 public:
@@ -26,6 +28,10 @@ public:
     int getHeight();
     int getX();
     int getY();
+    void setCircle(bool circle);
+    void setDirection(int direction);
+    int getDirection();
+    void wallCollision(int width, int height);
 
 };
 

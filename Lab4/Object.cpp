@@ -56,3 +56,66 @@ int Object::getB() {
     return this->b;
 }
 
+void Object::setCircle(bool circle) {
+    this->circle = circle;
+}
+
+
+void Object::setDirection(int direction) {
+    this->direction = direction;
+}
+
+int Object::getDirection() {
+    return this->direction;
+}
+
+void Object::wallCollision(int width, int height) {
+
+    bool collision = false;
+
+    if(y <= 0) {
+        switch(direction) {
+            case 2:
+                direction = 0;
+                break;
+            case 3:
+                direction = 1;
+                break;
+        }
+    }
+
+    if(x <= 0) {
+        switch(direction) {
+            case 3:
+                direction = 2;
+                break;
+            case 1:
+                direction = 0;
+                break;
+        }
+    }
+
+    if(x + this->width >= width ) {
+        switch(direction) {
+            case 0:
+                direction = 1;
+                break;
+            case 2:
+                direction = 3;
+                break;
+        }
+    }
+
+    if(y + this->heigth >= height) {
+        switch(direction) {
+            case 1:
+                direction = 3;
+                break;
+            case 0:
+                direction = 2;
+                break;
+        }
+    }
+
+
+}
