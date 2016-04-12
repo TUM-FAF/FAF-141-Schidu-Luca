@@ -93,7 +93,8 @@ void Object::wallCollision(int width, int height) {
                 direction = 0;
                 break;
         }
-        circle = false;
+        circle ? circle = false : circle = true;
+
     }
 
     if(x + this->width >= width ) {
@@ -105,7 +106,8 @@ void Object::wallCollision(int width, int height) {
                 direction = 3;
                 break;
         }
-        circle = false;
+        circle ? circle = false : circle = true;
+
     }
 
     if(y + this->heigth >= height) {
