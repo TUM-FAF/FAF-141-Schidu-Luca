@@ -120,10 +120,28 @@ void Object::wallCollision(int width, int height) {
     }
 }
 
+
+bool Object::objectCollision(int X, int Y) {
+
+    bool collision = false;
+
+    if(y <= Y + heigth && y > Y && x <= X + width && x >= X  ) {
+        collision = true;
+    }
+
+
+   return collision;
+}
+
+
 void Object::setSpeed(int speed) {
     this->speed = speed;
 }
 
 int Object::getSpeed() {
     return this->speed;
+}
+
+bool Object::isCircle() {
+    return this->circle;
 }

@@ -17,12 +17,11 @@
 
 static PAINTSTRUCT ps;
 const int BALL_MOVE_DELTA = 2;
-static HDC hdc,hdcMem;
+static HDC hdc;
 static RECT rect;
 static HBRUSH hBrush;
-static HBITMAP hbmMem;
-static HANDLE hOld;
 int vectorSize = 5;
+int speed = 0;
 
 int x, y;
 
@@ -42,15 +41,17 @@ void initObjects() {
         object = new Object(rand()%rect.right, rand()%rect.bottom, 50, 50);
         object->setCircle(false);
         object->setDirection(rand()%4);
-        object->setSpeed(rand()%8 + 1);
+        object->setSpeed(rand()%1 + 1);
         object->setColor(rand()%250, rand()%250, rand()%250);
+        object->setCircle(true);
         vec.push_back(*object);
+
     }
 
 }
 
 static void Paint(HWND hWnd, LPPAINTSTRUCT lpPS) {
-    
+
     GetClientRect(hWnd, &rc);
 
     hdcMem = CreateCompatibleDC(lpPS->hdc);
@@ -65,28 +66,47 @@ static void Paint(HWND hWnd, LPPAINTSTRUCT lpPS) {
         y = vec[i].getY();
         hbrBkGnd = CreateSolidBrush(RGB(vec[i].getR(), vec[i].getG(), vec[i].getB()));
         SelectObject(hdcMem, hbrBkGnd);
+
+
+        for(int j = 0; j < vectorSize; j++){
+            if(j != i){
+                if(vec[i].objectCollision(vec[j].getX(), vec[j].getY())){
+                    vec[i].setColor(rand()%250, rand()%250, rand()%250);
+                    vec[j].setColor(rand()%250, rand()%250, rand()%250);
+                                       
+                }
+            }
+        }
+
         vec[i].wallCollision(rect.right, rect.bottom);
+
         switch(vec[i].getDirection()) {
             case 0:
-                x += vec[i].getSpeed();
-                y += vec[i].getSpeed();
+                x += vec[i].getSpeed() + speed;
+                y += vec[i].getSpeed() + speed;
                 break;
             case 1:
-                x -= vec[i].getSpeed();
-                y += vec[i].getSpeed();
+                x -= vec[i].getSpeed() + speed;
+                y += vec[i].getSpeed() + speed;
                 break;
             case 2:
-                x += vec[i].getSpeed();
-                y -= vec[i].getSpeed();
+                x += vec[i].getSpeed() + speed;
+                y -= vec[i].getSpeed() + speed;
                 break;
             case 3:
-                x -= vec[i].getSpeed();
-                y -= vec[i].getSpeed();
+                x -= vec[i].getSpeed() + speed;
+                y -= vec[i].getSpeed() + speed;
                 break;
         }
 
         vec[i].setPosition(x, y);
-        Rectangle(hdcMem, vec[i].getX(), vec[i].getY(), vec[i].getX() + vec[i].getWidth(), vec[i].getY() + vec[i].getHeight());
+        if(vec[i].isCircle()){
+            Ellipse(hdcMem, vec[i].getX(), vec[i].getY(), vec[i].getX() + vec[i].getWidth(),
+                    vec[i].getY() + vec[i].getHeight());
+        }else{
+            Rectangle(hdcMem, vec[i].getX(), vec[i].getY(), vec[i].getX() + vec[i].getWidth(),
+                      vec[i].getY() + vec[i].getHeight());
+        }
     }
     DeleteObject(hbrBkGnd);
     SetBkMode(hdcMem, TRANSPARENT);
@@ -182,12 +202,8 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
         case WM_CREATE: {
 
-
             hdc = GetDC(hWnd);
             GetClientRect(hWnd,&rect);
-            hdcMem = CreateCompatibleDC(hdc);
-            hbmMem = CreateCompatibleBitmap(hdc, rect.right, rect.bottom);
-            hOld = SelectObject(hdcMem,hbmMem);
 
             int ret = SetTimer(hWnd, TIMER_ID, 5, NULL);
             if(ret == 0)
@@ -222,6 +238,18 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             break;
         }
 
+
+        case WM_MOUSEWHEEL : {
+            int zDelta = (short) HIWORD(wParam);
+
+            if(zDelta > 0) {
+                speed += 1;
+            }else {
+                if(speed > 0)
+                    speed -= 1;
+            }
+            break;
+        }
 
         case WM_DESTROY: {
             KillTimer(hWnd, TIMER_ID);

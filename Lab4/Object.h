@@ -31,9 +31,11 @@ public:
     int getX();
     int getY();
     void setCircle(bool circle);
+    bool isCircle();
     void setDirection(int direction);
     int getDirection();
     void wallCollision(int width, int height);
+    bool objectCollision(int X, int Y);
     void setSpeed(int speed);
     int getSpeed();
 
