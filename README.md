@@ -5,8 +5,8 @@
 # TrafficSimulator
 
 # Creators
-* Schidu Luca - Core of the application, simulation
-* Schidu Vasile - UI (haven't done yet)
+* Schidu Luca - Core of the application
+* Schidu Vasile - UI, Drawing on the screen, simulation
 
 # Tasks performed
 * Simulate the work of an intersection with 4 traffic lights.
