@@ -1,0 +1,177 @@
+<div ng-controller="todosController as vm">
+
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <ul class="sidebar-nav">
+                <li class="sidebar-brand">
+                    <a href="#/todos">
+                        Welcome
+                    </a>
+                </li>
+                <li>
+                    <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-ng-click="vm.changeButtonAdd()" data-target="#myModal" >Add todo</button>
+                </li>
+                <li>
+                    <button type="button" class="btn " data-ng-click="vm.logout()">Logout</button>
+                </li>
+
+            </ul>
+        </div>
+        <!-- /#sidebar-wrapper -->
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <div class="container-fluid">
+
+                <table class="table table-hover">
+                    <tr>
+                        <td>
+                            <b>Title</b>
+                        </td>
+                        <td>
+                            <b>Priority</b>
+                        </td>
+                        <td>
+                            <b>Post date</b>
+                        </td>
+                        <td>
+                            <b>Deadline</b>
+                        </td>
+                        <td>
+                            <b>Action</b>
+                        </td>
+                    </tr>
+
+                    <tr ng-repeat="todo in vm.todos">
+                        <td>
+                            {{todo.title}}
+                        </td>
+                        <td>
+                            {{todo.priority}}
+                        </td>
+                        <td>
+                            {{todo.postDate}}
+                        </td>
+                        <td>
+                            {{todo.deadline}}
+                        </td>
+                        <td>
+                            <button class="btn btn-succes" data-toggle="modal" data-target="#myModal" data-ng-click="vm.changeButtonUpdate();
+                            vm.completeFormFields($index)">update</button>
+                            <button class="btn btn-warning" data-ng-click="vm.removeTodo($index)">delete</button>
+                        </td>
+
+                    </tr>
+                </table>
+
+                <div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+                     aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <!-- Modal Header -->
+                            <div class="modal-header">
+                                <button type="button" class="close"
+                                        data-dismiss="modal">
+                                    <span aria-hidden="true">&times;</span>
+                                    <span class="sr-only">Close</span>
+                                </button>
+                                <h4 class="modal-title" id="myModalLabel">
+                                    Todo
+                                </h4>
+                            </div>
+
+                            <!-- Modal Body -->
+                            <div class="modal-body">
+
+                                <form class="form-horizontal" role="form">
+                                    <div class="form-group">
+                                        <label  class="col-sm-2 control-label">Title</label>
+                                        <div class="col-sm-10">
+                                            <input ng-model="vm.todoObject.title" type="text" class="form-control" placeholder="Title"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">Priority</label>
+                                        <div class="col-sm-10">
+                                            <select ng-model="vm.todoObject.priority" class="selectpicker">
+                                                    <option>1</option>
+                                                    <option>2</option>
+                                                    <option>3</option>
+                                                    <option>4</option>
+                                                    <option>5</option>
+                                            </select>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">Post date</label>
+                                        <div class="col-sm-10">
+                                            <input ng-model="vm.todoObject.postDate"  type="text" class="form-control datepicker" placeholder="Post date"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">Deadline</label>
+                                        <div class="col-sm-10">
+                                            <input ng-model="vm.todoObject.deadline" type="text" class="form-control" placeholder="deadline"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-sm-offset-2 col-sm-10">
+                                            <button data-dismiss="modal" data-ng-click="vm.performAction($index)" class="btn btn-default">{{vm.buttonName}}</button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+
+                            <!-- Modal Footer -->
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default"
+                                        data-dismiss="modal">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!-- /#page-content-wrapper -->
+
+    </div>
+
+
+
+
+
+
+    <!-- jQuery -->
+    <script src="js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+
+    <!-- Menu Toggle Script -->
+    <script>
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+        });
+
+
+        $(function(){
+            $('.datepicker').datepicker({
+                format: 'mm-dd-yyyy'
+            });
+        });
+
+    </script>
+
+</div>
